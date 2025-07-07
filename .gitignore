@@ -1,0 +1,39 @@
+# Simulation outputs
+*.vcd
+*.wlf
+*.log
+*.lxt*
+*.vvp
+*.vpd
+
+# Build artifacts
+*.bit
+*.bin
+*.elf
+*.dcp
+*.jou
+*.str
+*.tmp
+*.rpt
+
+# Vivado
+.cache/
+.hw/
+.ip_user_files/
+.runs/
+.sim/
+.xpr
+.webtalk/
+
+# Quartus (if used)
+db/
+output_files/
+*.qpf
+*.qsf
+
+# General
+*.bak
+*.swp
+*.DS_Store
+__pycache__/
+*.pyc
