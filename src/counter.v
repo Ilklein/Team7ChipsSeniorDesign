@@ -11,10 +11,10 @@ module counter #(
 
         
         if(en & count != MAX) begin 
-            count = count+1;
+            count <= count+1;
         end 
         else begin
-            count = 0;
+            count <= 0;
         end
 
     end
