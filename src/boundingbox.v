@@ -5,7 +5,7 @@ module boundingbox(
     output wire XMINI,
     output wire XMAXI,
     output wire YMINI,
-    output wire YMAXI,
+    output wire YMAXI
 );
 
 
@@ -70,9 +70,6 @@ endmodule
         output reg [8:0] XMAX, 
         output reg [8:0] YMIN, 
         output reg [8:0] YMAX);
-
-
-
 
         //every 27 clock cycles we sample all 
             always@(posedge CLK) begin
