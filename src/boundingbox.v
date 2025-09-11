@@ -7,8 +7,6 @@ module boundingbox(
     output [15:0] YMAXI
 );
 
-
-
     wire [15:0] xma, xmi, yma, ymi;
     wire [7:0] count;
 
@@ -17,26 +15,32 @@ module boundingbox(
         WIDTH = 8
     ) (CLK, EN, count);
 
-    maximum xmaximum (coordinates[15:0], coordinates[31:16], coordinates[47:32], count, xma);
-    minimum yminimum (coordinates[15:0], coordinates[31:16], coordinates[47:32], count, xmi);
-    maximum ymaximum (coordinates[63:48], coordinates[79:64], coordinates[95:80], count, ymi);
-    minimum yminimum (coordinates[63:48], coordinates[79:64], coordinates[95:80], count, ymi);
-    round finalout(xma, xmi, yma, ymi, XMAX, XMIN, YMAX, YMIN);
+    maximum xmaximum (.p1(coordinates[15:0]), .p2(coordinates[31:16]), .p3(coordinates[47:32]), .count(count), .max(xma));
+    minimum yminimum (.p1(coordinates[15:0]), .p2(coordinates[31:16]), .p3(coordinates[47:32]), .count(count), .min(xmi));
+    maximum ymaximum (.p1(coordinates[63:48]), .p2(coordinates[79:64]), .p3(coordinates[95:80]), .count(count), .max(ymi));
+    minimum yminimum (.p1(coordinates[63:48]), .p2(coordinates[79:64]), .p3(coordinates[95:80]), .count(count), .min(ymi));
+
+    round_fixed_point rounded_xmax(.unrounded(xma, .rounded(XMAX)));
+    round_fixed_point rounded_xmin(.unrounded(xmi, .rounded(XMIN)));
+    round_fixed_point rounded_ymax(.unrounded(yma, .rounded(YMAX)));
+    round_fixed_point rounded_ymin(.unrounded(ymi, .rounded(YMIN)));
     
     //select s (CLK, xory, ma, mi, count, XMIN, XMAX, YMIN, YMAX);
 
 endmodule
 
-module round (
-    input [15:0] xmax,
-    input [15:0] xmin,
-    input [15:0] ymax,
-    input [15:0] ymin,
-    output reg [15:0] roundedxmax,
-    output reg [15:0] roundedxmin,
-    output reg [15:0] roundedymax,
-    output reg [15:0] roundedymin
-); beginmodule
+module round_fixed_point(
+    input [15:0] unrounded,
+    output reg [15:0] rounded
+); 
+
+    if(unrounded[5])
+    begin
+        assign unrounded[5:0] = 6'b0;
+        assign unrounded = unrounded + 1;
+    end
+    else
+        assign unrounded[5:0] = 6'b0;
 
 endmodule
    

@@ -1,3 +1,4 @@
+// verified
 module edge_function(
     input  wire signed [15:0] v0x,
     input  wire signed [15:0] v0y,
