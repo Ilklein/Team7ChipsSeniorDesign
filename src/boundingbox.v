@@ -1,10 +1,10 @@
 module boundingbox(
-    input [95:0] coordinates, //format x1,x2,x3, y1,y2,y3, 
+    input [95:0] coordinates, //format x1,x2,x3, y1,y2,y3, edit to seperate vertices
     input CLK,
-    output [15:0] XMINI,
-    output [15:0] XMAXI,
-    output [15:0] YMINI,
-    output [15:0] YMAXI
+    output [15:0] XMIN,
+    output [15:0] XMAX,
+    output [15:0] YMIN,
+    output [15:0] YMAX
 );
 
     wire [15:0] xma, xmi, yma, ymi;
@@ -75,7 +75,7 @@ endmodule
     //         end
     // endmodule
 
-   
+    // clock?
     module maximum(
         input [15:0] p1,
         input [15:0] p2,
