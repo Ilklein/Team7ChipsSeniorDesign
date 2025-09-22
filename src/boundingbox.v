@@ -39,15 +39,10 @@ module boundingbox(
 endmodule
 
 module round_fixed_point(
-    input [15:0] unrounded,
-    output reg [15:0] rounded
+    input wire [15:0] unrounded,
+    output wire [15:0] rounded
 ); 
-    always @(*) begin
-        if(unrounded[5])
-        assign unrounded = unrounded[6] + 1;
-    assign unrounded[5:0] = 6'b0;
-    end
-
+    assign rounded = {unrounded[15:6], 6'b0} + unrounded[5];
 endmodule
    
 
@@ -140,3 +135,4 @@ endmodule
             end
         end
     endmodule
+
