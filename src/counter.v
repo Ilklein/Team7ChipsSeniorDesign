@@ -10,7 +10,7 @@ module counter #(
     always @(posedge clk) begin
 
         
-        if(en & count != MAX) begin 
+        if(en && count != MAX) begin 
             count <= count+1;
         end 
         else begin
