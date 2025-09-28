@@ -9,6 +9,7 @@ module boundingbox(
     input [15:0] v1y,
     input [15:0] v2y,
 //>>>>>>> 2efe149aea42103b8e6122a5e601e7cd84b294d3
+    input EN,
     input CLK,
     output [15:0] XMIN,
     output [15:0] XMAX,
@@ -135,5 +136,6 @@ endmodule
             end
         end
     endmodule
+
 
 
