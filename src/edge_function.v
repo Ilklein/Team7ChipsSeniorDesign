@@ -7,11 +7,13 @@ module edge_function(
     input  wire signed [15:0] v2y,
     input  wire signed [15:0] px,
     input  wire signed [15:0] py,
-    output wire inside
+    input clk,
+    output wire signed [31:0] e1,
+    output wire signed [31:0] e2,
+    output wire signed [31:0] e3,
 );
 
     wire signed [31:0] m1, m2, m3, m4, m5, m6;
-    wire signed [31:0] e1, e2, e3;
 
     fixed_point_mult mult1 (
 	.a(px - v0x),
@@ -23,7 +25,6 @@ module edge_function(
 	.b(v1x - v0x),
 	.result(m2)
     );
-    assign e1 = m1 - m2;
 
     fixed_point_mult mult3 (
 	.a(px - v1x),
@@ -35,7 +36,6 @@ module edge_function(
 	.b(v2x - v1x),
 	.result(m4)
     );
-    assign e2 = m3 - m4;
 
     fixed_point_mult mult5 (
 	.a(px - v2x),
@@ -47,9 +47,11 @@ module edge_function(
 	.b(v0x - v2x),
 	.result(m6)
     );
-    assign e3 = m5 - m6;
 
-    // Inside test (all edges non-negative)
-    assign inside = (e1 >= 0) && (e2 >= 0) && (e3 >= 0);
+    always @(posedge clk) begin
+        e1 <= m1 - m2;
+        e2 <= m3 - m4;
+        e3 <= m5 - m6;
+    end
 
 endmodule
