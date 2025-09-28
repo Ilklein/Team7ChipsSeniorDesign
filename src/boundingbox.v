@@ -1,14 +1,10 @@
 module boundingbox(
-//<<<<<<< HEAD
-    input [95:0] coordinates, //format x1,x2,x3, y1,y2,y3, edit to seperate vertices
-//=======
     input [15:0] v0x, //format x1,x2,x3, y1,y2,y3, 
     input [15:0] v1x,
     input [15:0] v2x,
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
-//>>>>>>> 2efe149aea42103b8e6122a5e601e7cd84b294d3
     input EN,
     input CLK,
     output [15:0] XMIN,
@@ -35,8 +31,6 @@ module boundingbox(
     round_fixed_point rounded_ymax(.unrounded(yma, .rounded(YMAX)));
     round_fixed_point rounded_ymin(.unrounded(ymi, .rounded(YMIN)));
     
-    //select s (CLK, xory, ma, mi, count, XMIN, XMAX, YMIN, YMAX);
-
 endmodule
 
 module round_fixed_point(
@@ -46,38 +40,6 @@ module round_fixed_point(
     assign rounded = {unrounded[15:6], 6'b0} + 64*unrounded[5];
 endmodule
    
-
-    // module select(
-        //     input CLK,
-        //     input xory, 
-        //     input[8:0] ma,
-        //     input[8:0] mi,
-        //     input[4:0] count,
-        //     output reg [8:0] XMIN, 
-        //     output reg [8:0] XMAX, 
-        //     output reg [8:0] YMIN, 
-        //     output reg [8:0] YMAX);
-
-        //     //every 27 clock cycles we sample all 
-        //         always@(posedge CLK) begin
-        //             if(count == 27) begin //1 cycle delay is necessary but must be considered
-        //                 if(xory==1) begin
-        //                     //call XMAX
-        //                     XMAX <= ma;
-        //                     //call XMIN
-        //                     XMIN <= mi;
-        //                 end 
-        //                 else begin
-        //                     //call YMAX
-        //                     YMAX <= ma;
-        //                     //call YMIN
-        //                     YMIN <= mi;
-        //                 end           
-        //             end
-        //         end
-    // endmodule
-
-    // clock?
     module maximum(
         input [15:0] p1,
         input [15:0] p2,
@@ -86,7 +48,7 @@ endmodule
         output reg [15:0] max
         );
 
-        always @(*) begin
+        always @(posedge CLK) begin
             if(count == 95) begin
                 if(p1>p2) begin
                     if(p1>p3) begin
@@ -115,7 +77,7 @@ endmodule
         input [7:0] count,
         output reg [15:0] min
         );
-        always @(*) begin
+        always @(posedge CLK) begin
             if(count == 95) begin
                 if(p1<p2) begin
                     if(p1<p3) begin
@@ -136,6 +98,7 @@ endmodule
             end
         end
     endmodule
+
 
 
 
