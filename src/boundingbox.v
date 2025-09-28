@@ -42,7 +42,7 @@ module round_fixed_point(
     input wire [15:0] unrounded,
     output wire [15:0] rounded
 ); 
-    assign rounded = {unrounded[15:6], 6'b0} + unrounded[5];
+    assign rounded = {unrounded[15:6], 6'b0} + 64*unrounded[5];
 endmodule
    
 
@@ -135,4 +135,5 @@ endmodule
             end
         end
     endmodule
+
 
