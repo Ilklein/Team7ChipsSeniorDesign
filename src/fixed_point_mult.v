@@ -1,4 +1,3 @@
-// verified
 module fixed_point_mult(
      input wire signed [15:0] a,
      input wire signed [15:0] b,

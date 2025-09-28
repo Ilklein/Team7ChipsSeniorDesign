@@ -1,16 +1,17 @@
 
 module interpolation_weights(
-    input  wire [15:0] v0x,
-    input  wire [15:0] v0y,
-    input  wire [15:0] v1x,
-    input  wire [15:0] v1y,
-    input  wire [15:0] v2x,
-    input  wire [15:0] v2y,
-    input  wire [15:0] px,
-    input  wire [15:0] py,
-    output wire [31:0] w0,
-    output wire [31:0] w1,
-    output wire [31:0] w2
+    input signed [15:0] v0x,
+    input signed [15:0] v0y,
+    input signed [15:0] v1x,
+    input signed [15:0] v1y,
+    input signed [15:0] v2x,
+    input signed [15:0] v2y,
+    input signed [15:0] px,
+    input signed [15:0] py,
+    input clk,
+    output reg [31:0] w0,
+    output reg [31:0] w1,
+    output reg [31:0] w2
 );
 
     // Area of full triangle (v0,v1,v2)
