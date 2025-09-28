@@ -1,10 +1,10 @@
 module counter #(
-    parameter MAX = 143
+    parameter MAX = 143,
     parameter WIDTH = 8
 ) (
     input clk,
     input en,
-    output [WIDTH,0] count
+    output reg [WIDTH:0] count
 );
     
     always @(posedge clk) begin
