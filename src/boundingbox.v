@@ -5,11 +5,11 @@ module boundingbox(
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
-    input CLK,
-    output [15:0] XMINI,
-    output [15:0] XMAXI,
-    output [15:0] YMINI,
-    output [15:0] YMAXI
+    input clk,
+    output [15:0] xmin,
+    output [15:0] xmax,
+    output [15:0] ymin,
+    output [15:0] ymax
 );
 
     wire [15:0] xma, xmi, yma, ymi;
