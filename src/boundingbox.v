@@ -1,4 +1,7 @@
 module boundingbox(
+<<<<<<< HEAD
+    input [95:0] coordinates, //format x1,x2,x3, y1,y2,y3, edit to seperate vertices
+=======
     input [15:0] v0x, //format x1,x2,x3, y1,y2,y3, 
     input [15:0] v1x,
     input [15:0] v2x,
@@ -35,15 +38,10 @@ module boundingbox(
 endmodule
 
 module round_fixed_point(
-    input [15:0] unrounded,
-    output reg [15:0] rounded
+    input wire [15:0] unrounded,
+    output wire [15:0] rounded
 ); 
-    always @(*) begin
-        if(unrounded[5])
-        assign unrounded = unrounded[6] + 1;
-    assign unrounded[5:0] = 6'b0;
-    end
-
+    assign rounded = {unrounded[15:6], 6'b0} + unrounded[5];
 endmodule
    
 
@@ -77,7 +75,7 @@ endmodule
         //         end
     // endmodule
 
-   
+    // clock?
     module maximum(
         input [15:0] p1,
         input [15:0] p2,
@@ -136,3 +134,4 @@ endmodule
             end
         end
     endmodule
+
