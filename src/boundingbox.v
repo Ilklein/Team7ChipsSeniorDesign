@@ -5,6 +5,7 @@ module boundingbox(
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
+    input [7:0] count,
     input EN,
     input CLK,
     output [15:0] XMIN,
@@ -14,13 +15,7 @@ module boundingbox(
 );
 
     wire [15:0] xma, xmi, yma, ymi;
-    wire [7:0] count;
-
-    counter counter_143 #(
-        MAX = 143,
-        WIDTH = 8
-    ) (CLK, EN, count);
-
+    
     maximum xmaximum (.p1(v0x), .p2(v1x), .p3(v2x), .count(count), .max(xma));
     minimum xminimum (.p1(v0x), .p2(v1x), .p3(v2x), .count(count), .min(xmi));
     maximum ymaximum (.p1(v0y), .p2(v1y), .p3(v2y), .count(count), .max(ymi));
@@ -98,6 +93,7 @@ endmodule
             end
         end
     endmodule
+
 
 
 
