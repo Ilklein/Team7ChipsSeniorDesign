@@ -1,14 +1,14 @@
 module boundingbox(
-<<<<<<< HEAD
+//<<<<<<< HEAD
     input [95:0] coordinates, //format x1,x2,x3, y1,y2,y3, edit to seperate vertices
-=======
+//=======
     input [15:0] v0x, //format x1,x2,x3, y1,y2,y3, 
     input [15:0] v1x,
     input [15:0] v2x,
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
->>>>>>> 2efe149aea42103b8e6122a5e601e7cd84b294d3
+//>>>>>>> 2efe149aea42103b8e6122a5e601e7cd84b294d3
     input CLK,
     output [15:0] XMIN,
     output [15:0] XMAX,
@@ -135,3 +135,4 @@ endmodule
             end
         end
     endmodule
+
