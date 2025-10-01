@@ -92,7 +92,6 @@ colorer color(
             .pixel(p)                 
             );
 
-
 PISO piso (.data(parallel_out), .out(OUT));
     
 endmodule
