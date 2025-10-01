@@ -5,29 +5,20 @@ module boundingbox(
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
-<<<<<<< HEAD
+    input [7;0] counter,
     input clk,
     output [15:0] xmin,
     output [15:0] xmax,
     output [15:0] ymin,
     output [15:0] ymax
-=======
-    input [7:0] count,
-    input EN,
-    input CLK,
-    output [15:0] XMIN,
-    output [15:0] XMAX,
-    output [15:0] YMIN,
-    output [15:0] YMAX
->>>>>>> 64d35e6f30e222faab35dd1cf6ce1e8e736f7353
 );
 
     wire [15:0] xma, xmi, yma, ymi;
     
-    maximum xmaximum (.p1(v0x), .p2(v1x), .p3(v2x), .count(count), .max(xma));
-    minimum xminimum (.p1(v0x), .p2(v1x), .p3(v2x), .count(count), .min(xmi));
-    maximum ymaximum (.p1(v0y), .p2(v1y), .p3(v2y), .count(count), .max(ymi));
-    minimum yminimum (.p1(v0y), .p2(v1y), .p3(v2y), .count(count), .min(ymi));
+    maximum xmaximum (.p1(v0x), .p2(v1x), .p3(v2x), .count(counter), .max(xma));
+    minimum xminimum (.p1(v0x), .p2(v1x), .p3(v2x), .count(counter), .min(xmi));
+    maximum ymaximum (.p1(v0y), .p2(v1y), .p3(v2y), .count(counter), .max(ymi));
+    minimum yminimum (.p1(v0y), .p2(v1y), .p3(v2y), .count(counter), .min(ymi));
 
     round_fixed_point rounded_xmax(.unrounded(xma, .rounded(XMAX)));
     round_fixed_point rounded_xmin(.unrounded(xmi, .rounded(XMIN)));
@@ -101,7 +92,6 @@ endmodule
             end
         end
     endmodule
-
 
 
 
