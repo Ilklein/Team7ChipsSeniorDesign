@@ -188,15 +188,15 @@ always @(posedge CLK or posedge RST) begin
                     VALID <= 0; // pixel not in triangle
                     out_ready <= 1;
                 end
-                xpos <= xpos + 1;
-                xcount <= xcount + 1;
+                xpos <= xpos + 64;
+                xcount <= xcount + 1; // increment by 1 in fixed point
                 edge1 <= edge1 + A1; // update edge functions using linear increments
                 edge2 <= edge2 + A2;
                 edge3 <= edge3 + A3;
             end 
             else begin
                 xpos <= xpos - xdiff;
-                ypos <= ypos + 1;
+                ypos <= ypos + 64;
                 xcount <= 0;
                 ycount <= ycount + 1;
                 edge1 <= edge1 + B1 - ((xdiff * A1) >>> FRAC); // update edge functions for new row

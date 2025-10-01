@@ -37,7 +37,7 @@ module boundingbox(
     
 endmodule
 
-module round_fixed_point(
+module round_fixed_point( // Only works for positive numbers
     input wire [15:0] unrounded,
     output wire [15:0] rounded
 ); 
