@@ -22,9 +22,11 @@ reg [15:0] C0, C1, C2;
 
 //wire [15:0] w0, w1, w2;
 
-reg [8:0] xcount, ycount; // counts for iterating through bounding box
-reg signed [15:0] xdiff; // width of bounding box
-reg signed [15:0] ydiff;
+// values for iterating through bounding box
+reg [9:0] xspan_pix;  // up to 320
+reg [8:0] yspan_pix;  // up to 240
+reg [9:0] xrem;
+reg [8:0] yrem;
 
 wire [15:0] xmax;
 wire [15:0] xmin;
@@ -36,6 +38,7 @@ wire signed [15:0] b1, b2, b3;
 reg signed [15:0] B1, B2, B3;
 wire signed [31:0] e1, e2, e3;
 reg signed [31:0] edge1, edge2, edge3;
+reg signed [31:0] e1_row0, e2_row0, e3_row0; // edge function values at start of current row
 
 reg sipo_done; // control signals
 reg bb_done;
@@ -45,8 +48,7 @@ reg piso1_done;
 reg piso2_done;
 reg piso3_done;
 
-reg [15:0] xpos; // current values to go to the 3 PISO modules
-reg [15:0] ypos;
+reg signed [15:0] xpos, ypos; // current values to go to the 3 PISO modules
 reg [15:0] color;
 
 SIPO s1 (
@@ -136,8 +138,10 @@ always @(posedge CLK or posedge RST) begin
     VALID <= 0; // should valid stay high for 16 cycles?
     DONE <= 0; // pulses high when done with triangle
     if(RST) begin
-        xcount <= 0;
-        ycount <= 0;
+        xspan_pix <= 0;
+        yspan_pix <= 0;
+        xrem <= 0;
+        yrem <= 0;
         xpos <= 0;
         ypos <= 0;
         color <= 0;
@@ -155,8 +159,10 @@ always @(posedge CLK or posedge RST) begin
         C0 <= c0;
         C1 <= c1;
         C2 <= c2;
-        xdiff <= xmax - xmin;
-        ydiff <= ymax - ymin;
+        xspan_pix <= ( (xmax - xmin) >>> FRAC ) + 10'd1;
+        yspan_pix <= ( (ymax - ymin) >>> FRAC ) + 9'd1;
+        xrem <= ( (xmax - xmin) >>> FRAC ) + 10'd1;
+        yrem <= ( (ymax - ymin) >>> FRAC ) + 9'd1;
         xpos <= xmin;
         ypos <= ymin;
         bb_done <= 1;
@@ -165,6 +171,9 @@ always @(posedge CLK or posedge RST) begin
         edge1 <= e1;
         edge2 <= e2;
         edge3 <= e3;
+        e1_row0 <= e1;
+        e2_row0 <= e2;
+        e3_row0 <= e3;
         A1 <= a1;
         A2 <= a2;
         A3 <= a3;
@@ -176,37 +185,39 @@ always @(posedge CLK or posedge RST) begin
     end
     
     if(coloring_ready && !((!piso1_done || !piso2_done || !piso3_done) && out_ready)) begin // wait for PISOs to finish before changing inputs
-        if(ycount != ydiff) begin
-            if(xcount != xdiff) begin
+        if(yrem != 0) begin
+            if(xrem != 0) begin
                 if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0) begin // check edges, pixels should be input CCW on screen(CW in coord system)
-                    color <= c0; 
-                    VALID <= 1;
-                    out_ready <= 1;
+                    color <= c0; // change if interpolation is added
+                    VALID <= 1; // pixel is in triangle
                 end
                 else begin
                     color <= 16'b0; //background color
                     VALID <= 0; // pixel not in triangle
-                    out_ready <= 1;
                 end
-                xpos <= xpos + 64;
-                xcount <= xcount + 1; // increment by 1 in fixed point
+                out_ready <= 1;
+                xpos <= xpos + 16'd64;
+                xrem <= xrem - 1; // decrement by 1
                 edge1 <= edge1 + A1; // update edge functions using linear increments
                 edge2 <= edge2 + A2;
                 edge3 <= edge3 + A3;
             end 
             else begin
-                xpos <= xpos - xdiff;
+                xpos <= xmin;
                 ypos <= ypos + 64;
-                xcount <= 0;
-                ycount <= ycount + 1;
-                edge1 <= edge1 + B1 - ((xdiff * A1) >>> FRAC); // update edge functions for new row
-                edge2 <= edge2 + B2 - ((xdiff * A2) >>> FRAC);
-                edge3 <= edge3 + B3 - ((xdiff * A3) >>> FRAC);
+                xrem <= xspan_pix; // reset x remainder
+                yrem <= yrem - 1; // decrement by 1
+
+                e1_row0 <= e1_row0 + B1; // update row 0 edge functions
+                e2_row0 <= e2_row0 + B2;
+                e3_row0 <= e3_row0 + B3;
+
+                edge1 <= e1_row0 + B1; // update edge functions for new row (uses old value of row 0 because nonblocking)
+                edge2 <= e2_row0 + B2;
+                edge3 <= e3_row0 + B3;
             end
         end 
         else begin
-            xcount <= 0;
-            ycount <= 0;
             out_ready <= 0;
             coloring_ready <= 0;
             DONE <= 1;

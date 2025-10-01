@@ -21,41 +21,41 @@ module edge_function(
     wire signed [31:0] m1, m2, m3, m4, m5, m6;
 
     assign a1 = v0y - v1y;
-    assign b1 = v0x - v1x;
+    assign b1 = v1x - v0x;
     fixed_point_mult mult1 (
 	.a(px - v0x),
-	.b(-a1),
+	.b(a1),
 	.result(m1)
     );
     fixed_point_mult mult2 (
 	.a(py - v0y),
-	.b(-b1),
+	.b(b1),
 	.result(m2)
     );
 
     assign a2 = v1y - v2y;
-    assign b2 = v1x - v2x;
+    assign b2 = v2x - v1x;
     fixed_point_mult mult3 (
 	.a(px - v1x),
-	.b(-a2),
+	.b(a2),
 	.result(m3)
     );
     fixed_point_mult mult4 (
 	.a(py - v1y),
-	.b(-b2),
+	.b(b2),
 	.result(m4)
     );
 
     assign a3 = v2y - v0y;
-    assign b3 = v2x - v0x;
+    assign b3 = v0x - v2x;
     fixed_point_mult mult5 (
 	.a(px - v2x),
-	.b(-a3),
+	.b(a3),
 	.result(m5)
     );
     fixed_point_mult mult6 (
 	.a(py - v2y),
-	.b(-b3),
+	.b(b3),
 	.result(m6)
     );
         
