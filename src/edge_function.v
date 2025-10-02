@@ -59,8 +59,8 @@ module edge_function(
 	.result(m6)
     );
         
-    assign e1 = m1 - m2;
-    assign e2 = m3 - m4;
-    assign e3 = m5 - m6;
+    assign e1 = m1 + m2;
+    assign e2 = m3 + m4;
+    assign e3 = m5 + m6;
 
 endmodule

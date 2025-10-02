@@ -40,13 +40,13 @@ wire signed [31:0] e1, e2, e3;
 reg signed [31:0] edge1, edge2, edge3;
 reg signed [31:0] e1_row0, e2_row0, e3_row0; // edge function values at start of current row
 
-reg sipo_done; // control signals
+wire sipo_done; // control signals
 reg bb_done;
 reg coloring_ready;
 reg out_ready;
-reg piso1_done;
-reg piso2_done;
-reg piso3_done;
+wire piso1_done;
+wire piso2_done;
+wire piso3_done;
 
 reg signed [15:0] xpos, ypos; // current values to go to the 3 PISO modules
 reg [15:0] color;
@@ -80,8 +80,8 @@ edge_function ef (
     .v1y(V1Y),
     .v2x(V2X),
     .v2y(V2Y),
-    .px(xpos + 32), // +32 = +0.5 in fixed point to sample at pixel center
-    .py(ypos + 32),
+    .px(xpos + 16'd32), // +32 = +0.5 in fixed point to sample at pixel center
+    .py(ypos + 16'd32),
     .e1(e1),
     .e2(e2),
     .e3(e3),
