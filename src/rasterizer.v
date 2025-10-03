@@ -1,6 +1,7 @@
 module rasterizer(
         input wire CLK,
         input wire RST,
+        input wire START,
         input wire D,   // data is Q10.6 fixed point, format x1, y1, c1, x2, y2, c2, x3, y3, c3
         output wire C,  // output color
         output wire PX, // output pixel x coord
@@ -55,7 +56,7 @@ SIPO s1 (
     .clk(CLK),
     .rst(RST),
     .in(D),
-    .valid_data(DONE),
+    .valid_data(START),
     .sipo_done(sipo_done),
     .out({v0x, v0y, c0, v1x, v1y, c1, v2x, v2y, c2})
 );
@@ -150,7 +151,7 @@ always @(posedge CLK or posedge RST) begin
         out_ready <= 0;
     end
     else if(sipo_done && !bb_done) begin //after 144 cycles, we have the full triangle, calculate bounding box
-        V0X <= v0x;
+        V0X <= v0x; // outputs of SIPO are regiesters so do I need to store them in other registers?
         V0Y <= v0y;
         V1X <= v1x;
         V1Y <= v1y;
@@ -184,11 +185,12 @@ always @(posedge CLK or posedge RST) begin
         coloring_ready <= 1;
     end
     
-    if(coloring_ready && !((!piso1_done || !piso2_done || !piso3_done) && out_ready)) begin // wait for PISOs to finish before changing inputs
+    // simplified using De Morgan's from !((!piso1_done || !piso2_done || !piso3_done) && out_ready)
+    if(coloring_ready && ((piso1_done && piso2_done && piso3_done) || !out_ready)) begin // wait for PISOs to finish before changing inputs
         if(yrem != 0) begin
             if(xrem != 0) begin
                 if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0) begin // check edges, pixels should be input CCW on screen(CW in coord system)
-                    color <= c0; // change if interpolation is added
+                    color <= C0; // change if interpolation is added
                     VALID <= 1; // pixel is in triangle
                 end
                 else begin

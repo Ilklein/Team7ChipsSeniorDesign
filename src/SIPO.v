@@ -19,7 +19,7 @@ always @(posedge clk or posedge rst) begin
     end
     else begin
         if (!busy) begin
-            out <= {in, out[143:1]};
+            out <= {out[142:0], in};
             count <= count + 1;
             if(count == 8'd143) begin
                 sipo_done <= 1;
@@ -28,7 +28,7 @@ always @(posedge clk or posedge rst) begin
         end
         else begin
             sipo_done <= 0;
-            if(valid_data) begin // wait to start new triangle
+            if(valid_data) begin // once done is triggered, start new triangle
                 count <= 0;
                 busy <= 0;
             end
