@@ -37,3 +37,4 @@ output_files/
 *.DS_Store
 __pycache__/
 *.pyc
+myvenv/
