@@ -28,7 +28,7 @@ always @(posedge clk or posedge rst) begin
         end
         else begin
             sipo_done <= 0;
-            if(valid_data) begin // once done is triggered, start new triangle
+            if(valid_data) begin // once start is triggered, start new triangle
                 count <= 0;
                 busy <= 0;
             end

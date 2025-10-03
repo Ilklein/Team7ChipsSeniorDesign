@@ -33,16 +33,15 @@ wire [15:0] xmax;
 wire [15:0] xmin;
 wire [15:0] ymax;
 wire [15:0] ymin;
-wire signed [15:0] a1, a2, a3;
 reg signed [15:0] A1, A2, A3;
-wire signed [15:0] b1, b2, b3;
 reg signed [15:0] B1, B2, B3;
 wire signed [31:0] e1, e2, e3;
 reg signed [31:0] edge1, edge2, edge3;
 reg signed [31:0] e1_row0, e2_row0, e3_row0; // edge function values at start of current row
 
 wire sipo_done; // control signals
-reg bb_done;
+reg ef_start;
+wire edge_done;
 reg coloring_ready;
 reg out_ready;
 wire piso1_done;
@@ -62,12 +61,12 @@ SIPO s1 (
 );
 
 boundingbox bb (
-    .v0x(v0x),
-    .v0y(v0y),
-    .v1x(v1x),
-    .v1y(v1y),
-    .v2x(v2x),
-    .v2y(v2y),
+    .v0x(V0X),
+    .v0y(V0Y),
+    .v1x(V1X),
+    .v1y(V1Y),
+    .v2x(V2X),
+    .v2y(V2Y),
     .XMIN(xmin),
     .XMAX(xmax),
     .YMIN(ymin),
@@ -75,6 +74,9 @@ boundingbox bb (
 );
 
 edge_function ef (
+    .clk(CLK),
+    .rst(RST),
+    .valid_data(ef_start),
     .v0x(V0X),
     .v0y(V0Y),
     .v1x(V1X),
@@ -83,15 +85,16 @@ edge_function ef (
     .v2y(V2Y),
     .px(xpos + 16'd32), // +32 = +0.5 in fixed point to sample at pixel center
     .py(ypos + 16'd32),
+    .a1(A1),
+    .a2(A2),
+    .a3(A3),
+    .b1(B1),
+    .b2(B2),
+    .b3(B3),
     .e1(e1),
     .e2(e2),
     .e3(e3),
-    .a1(a1),
-    .a2(a2),
-    .a3(a3),
-    .b1(b1),
-    .b2(b2),
-    .b3(b3)
+    .edge_done(edge_done)
 );
 
 /*
@@ -146,42 +149,44 @@ always @(posedge CLK or posedge RST) begin
         xpos <= 0;
         ypos <= 0;
         color <= 0;
-        bb_done <= 0;
+        ef_start <= 0;
         coloring_ready <= 0;
         out_ready <= 0;
     end
-    else if(sipo_done && !bb_done) begin //after 144 cycles, we have the full triangle, calculate bounding box
+    else if(sipo_done) begin //after 144 cycles, we have the full triangle, calculate bounding box
         V0X <= v0x; // outputs of SIPO are regiesters so do I need to store them in other registers?
         V0Y <= v0y;
         V1X <= v1x;
         V1Y <= v1y;
         V2X <= v2x;
         V2Y <= v2y;
-        C0 <= c0;
+        C0 <= c0; // store colors
         C1 <= c1;
         C2 <= c2;
-        xspan_pix <= ( (xmax - xmin) >>> FRAC ) + 10'd1;
+    end
+    else if(!ef_start && !edge_done && !coloring_ready) begin // wait for bounding box to be calculated
+        A1 <= V0Y - V1Y; // edge function coefficients
+        A2 <= V1Y - V2Y; // reset?
+        A3 <= V2Y - V0Y;
+        B1 <= V1X - V0X;
+        B2 <= V2X - V1X;
+        B3 <= V0X - V2X;
+        xspan_pix <= ( (xmax - xmin) >>> FRAC ) + 10'd1; // values for iteration, +1 to round up
         yspan_pix <= ( (ymax - ymin) >>> FRAC ) + 9'd1;
         xrem <= ( (xmax - xmin) >>> FRAC ) + 10'd1;
         yrem <= ( (ymax - ymin) >>> FRAC ) + 9'd1;
         xpos <= xmin;
         ypos <= ymin;
-        bb_done <= 1;
+        ef_start <= 1; // triggers ef calculation next cycle
     end
-    else if(bb_done && !coloring_ready) begin //after 145 cycles, we have the bounding box, calculate edge functions at top-left corner
+    else if(edge_done) begin //after 145 cycles, we have the bounding box, calculate edge functions at top-left corner
         edge1 <= e1;
         edge2 <= e2;
         edge3 <= e3;
         e1_row0 <= e1;
         e2_row0 <= e2;
         e3_row0 <= e3;
-        A1 <= a1;
-        A2 <= a2;
-        A3 <= a3;
-        B1 <= b1;
-        B2 <= b2;
-        B3 <= b3;
-        bb_done <= 0;
+        ef_start <= 0;
         coloring_ready <= 1;
     end
     
