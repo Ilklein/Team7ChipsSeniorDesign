@@ -42,6 +42,7 @@ always @(posedge clk or posedge rst) begin
         e3 <= 32'sd0;
         m1 <= 32'sd0;
         m2 <= 32'sd0;
+        mult_result <= 32'sd0;
         A <= 16'sd0;
         B <= 16'sd0;
         count <= 3'd0;

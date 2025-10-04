@@ -99,17 +99,17 @@ edge_function ef (
 
 /*
 interpolation_weights iw (
-    .v0x(v0x),
-    .v0y(v0y),
-    .v1x(v1x),
-    .v1y(v1y),
-    .v2x(v2x),
-    .v2y(v2y),
-    .px(px),
-    .py(py),
+    .clk(CLK),
+    .rst(RST),
+    .valid_data(edge_done),
+    .area_012_reciprocal(16'sd0), // not used
+    .area_p12(edge1), // not used
+    .area_0p2(edge2), // not used
+    .area_01p(edge3), // not used
     .w0(w0),
     .w1(w1),
-    .w2(w2)
+    .w2(w2),
+    .interp_done(interp_done)
 );  
 */
 
@@ -179,7 +179,7 @@ always @(posedge CLK or posedge RST) begin
         ypos <= ymin;
         ef_start <= 1; // triggers ef calculation next cycle
     end
-    else if(edge_done) begin //after 145 cycles, we have the bounding box, calculate edge functions at top-left corner
+    else if(ef_start) begin //after 145 cycles, we have the bounding box, calculate edge functions at top-left corner
         edge1 <= e1;
         edge2 <= e2;
         edge3 <= e3;
