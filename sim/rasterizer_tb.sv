@@ -42,6 +42,10 @@ logic ready = 0;
 logic [15:0] color;
 logic readc = 0;
 int fileDescriptor;
+logic [15:0] y_display, x_display, color_display;
+assign color_display = chip.color;
+assign x_display = chip.xpos_out;
+assign y_display = chip.ypos_out;
 
 //logic read;
 
@@ -250,10 +254,10 @@ always@(negedge clk) begin
         if (fileDescriptor == 0) begin
             $display("File NOT opened successfully");
         end
-        for (int i = 0; i < 20; i++) begin
-            for (int j = 0; j < 30; j++) begin
-               // if(screen[i][j]) begin
-                $write( "%d,", screen[i][j]);
+        for (int i = 0; i < 10; i++) begin
+            for (int j = 0; j < 10; j++) begin
+                //if(screen[i][j]) begin
+                   $write( "%d,", screen[i][j]);
                 //end
                 //$fwrite(fileDescriptor, "%d,", screen[i][j]);
                 $fwrite(fileDescriptor, "Foundone");
@@ -267,20 +271,25 @@ always@(negedge clk) begin
         $stop;
     end
 end
-always @(posedge clk) begin
+always @(posedge valid) begin
     // if(done) begin
     //     $display("Done");
     // end
-    if (valid) begin
+    //if (valid) begin
 
-        read(.parallelx(x), .parallely(y), 
-        .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
-        //$display("Color found: %d",color);
-        screen[y[15:6]][x[15:6]] <= color;
+        // read(.parallelx(x), .parallely(y), 
+        // .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
+        
+        //y_display = chip.ypos;
+        //x_display = chip.xpos;
+        //color_display = chip.color;
+        //$display("Valid Pixel (%d,%d)",y_display >>> 6,x_display >>> 6);
+        screen[y_display[15:6]][x_display[15:6]] <= color_display;
         ready  <= 0;
         readx  <= 0;
         readc  <= 0;
-    end 
+
+   //end
 
 
 

@@ -20,7 +20,8 @@ always @(posedge clk or posedge rst) begin
         out <= 0;
     end
     else if (valid_data && !busy) begin
-        temp <= in;
+        temp <= {1'b0, in[15:1]};
+        out <= in[0];
         count <= 0;
         busy <= 1;
         piso_done <= 0;
@@ -30,7 +31,7 @@ always @(posedge clk or posedge rst) begin
         temp <= {1'b0, temp[15:1]};
         count <= count + 1;
 
-        if (count == 15) begin
+        if (count == 14) begin
             busy <= 0;
             piso_done <= 1;
             count <= 0;

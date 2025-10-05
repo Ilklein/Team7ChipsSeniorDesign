@@ -49,6 +49,7 @@ wire piso2_done;
 wire piso3_done;
 
 reg signed [15:0] xpos, ypos; // current values to go to the 3 PISO modules
+reg signed [15:0] xpos_out, ypos_out;
 reg [15:0] color;
 wire [7:0] count;
 
@@ -120,7 +121,7 @@ interpolation_weights iw (
 PISO p1 (
     .clk(CLK),
     .rst(RST),
-    .in(xpos),
+    .in(xpos_out),
     .valid_data(out_ready),
     .piso_done(piso1_done),
     .out(PX)
@@ -128,7 +129,7 @@ PISO p1 (
 PISO p2 (
     .clk(CLK),
     .rst(RST),
-    .in(ypos),
+    .in(ypos_out),
     .valid_data(out_ready),
     .piso_done(piso2_done),
     .out(PY)
@@ -152,6 +153,8 @@ always @(posedge CLK or posedge RST) begin
         yrem <= 0;
         xpos <= 0;
         ypos <= 0;
+        xpos_out <= 0;
+        ypos_out <= 0;
         color <= 0;
         bb_done <= 0;
         coloring_ready <= 0;
@@ -194,6 +197,8 @@ always @(posedge CLK or posedge RST) begin
     
     if(coloring_ready && !((!piso1_done || !piso2_done || !piso3_done) && out_ready)) begin // wait for PISOs to finish before changing inputs
         if(yrem != 0) begin
+            xpos_out <= xpos;
+            ypos_out <= ypos;
             if(xrem != 0) begin
                 if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0) begin // check edges, pixels should be input CCW on screen(CW in coord system)
                     color <= c0; // change if interpolation is added
@@ -203,12 +208,17 @@ always @(posedge CLK or posedge RST) begin
                     color <= 16'b0; //background color
                     VALID <= 0; // pixel not in triangle
                 end
+                // $display("%d",xpos[15:6]);
+                // $display("%d.%d",edge1[31:12],edge1[11:0]);
+                // $display("%d.%d",edge2[31:12],edge2[11:0]);
+                // $display("%d.%d",edge3[31:12],edge3[11:0]);
                 out_ready <= 1;
                 xpos <= xpos + 16'd64;
                 xrem <= xrem - 1; // decrement by 1
                 edge1 <= edge1 + A1; // update edge functions using linear increments
                 edge2 <= edge2 + A2;
                 edge3 <= edge3 + A3;
+
             end 
             else begin
                 xpos <= xmin;
