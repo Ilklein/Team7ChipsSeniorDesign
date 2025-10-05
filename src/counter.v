@@ -3,12 +3,12 @@ module counter #(
     parameter WIDTH = 8
 ) (
     input clk,
-    input en,
+    input rst,
     output reg [WIDTH-1:0] count
 );
     
     always @(posedge clk) begin
-        if(en && (count != MAX)) begin 
+        if(!rst && (count != MAX)) begin 
             count <= count + 1;
         end 
         else begin

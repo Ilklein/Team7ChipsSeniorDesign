@@ -35,9 +35,9 @@ logic [15:0] c3 = 16'b0000000000111110; //blue
 logic [143:0] vec;
 
 logic [15:0] screen [239:0][319:0];
-logic [8:0] x;
+logic [15:0] x;
 logic readx = 0;
-logic [8:0] y;
+logic [15:0] y;
 logic ready = 0;
 logic [15:0] color;
 logic readc = 0;
@@ -178,17 +178,30 @@ task sendserial;
     end
 endtask
 
-task automatic read;
+task  read;
 
-    input toRead;
-    output [15:0] parallel;
-    output done;
+    // input toReadx;
+    // input toReady;
+    // input toReadc;
 
+    output [15:0] parallelx;
+    output [15:0] parallely;
+    output [15:0] parallelc;
+
+    output donex;
+    output doney;
+    output donec;
+    begin
     for(int i = 0; i < 16; i++) begin
-    parallel = {toRead, parallel[15:1]};
+    parallelx = {px, parallelx[15:1]};
+    parallely = {py, parallely[15:1]};
+    parallelc = {c, parallelc[15:1]};
     #2;
     end
-    done = 1;
+    end
+    donex <= 1;
+    doney <= 1;
+    donec <= 1;
 
 endtask
 
@@ -202,51 +215,75 @@ end
 
 initial begin
     //makeTriangle(.x1(x1), .x2(x2), .x3(x3), .y1(y1), .y2(y2), .y3(y3));
-    x1 = 16'b0000111111000000;
-    x2 = 16'b0000000000000000;
-    x3 = 16'b0000000001000000;
+    // x1 = 16'b0000111111000000;
+    // x2 = 16'b0000000000000000;
+    // x3 = 16'b0000000001000000;
 
-    y1 = 16'b0000111111000000;
-    y2 = 16'b0000000000000000;
-    y3 = 16'b0000000001000000;
+    // y1 = 16'b0000111111000000;
+    // y2 = 16'b0000000000000000;
+    // y3 = 16'b0000000001000000;
+    for (int i = 0; i < 240; i++) begin
+        for (int j = 0; j < 320; j++) begin
+            screen[i][j] = 16'b0;
+        end
+    end
+    x1 = {10'd0,6'd0};
+    x2 = {10'd8,6'd0};
+    x3 = {10'd8,6'd0};
+
+    y1 = {10'd0,6'd0};
+    y2 = {10'd0,6'd0};
+    y3 = {10'd8,6'd0};
 
     vec = {x1, x2, x3, y1, y2, y3, c1, c2, c3};
+    rst = 1;
+    #4;
     rst = 0;
-    #2;
     sendserial(.message(vec));
     
 end
 
-always @(posedge clk) begin
-    if (chip.out_ready) begin
-        read(.toRead(px), .parallel(x), .done(readx));
-        read(.toRead(py), .parallel(y), .done(ready));
-        read(.toRead(c), .parallel(color), .done(readc));
-
-        if (readx && ready && readc) begin
-            screen[y][x] = color;
-            ready  = 0;
-            readx  = 0;
-            readc  = 0;
-        end
-    end
-
-    if (done) begin
+always@(negedge clk) begin
+        if (done) begin
         integer fileDescriptor;
-        fileDescriptor = $fopen("out.txt", "w");
-        if (fileDescriptor == 0)
+        fileDescriptor = $fopen("\\wsl.localhost\Ubuntu\home\isgray\Class\Chip\Team7ChipsSeniorDesign\sim\out.txt", "w");
+        if (fileDescriptor == 0) begin
             $display("File NOT opened successfully");
-
-        for (int i = 0; i < 240; i++) begin
-            for (int j = 0; j < 320; j++) begin
-                $fwrite(fileDescriptor, "%d,", screen[i][j]);
+        end
+        for (int i = 0; i < 20; i++) begin
+            for (int j = 0; j < 30; j++) begin
+               // if(screen[i][j]) begin
+                $write( "%d,", screen[i][j]);
+                //end
+                //$fwrite(fileDescriptor, "%d,", screen[i][j]);
+                $fwrite(fileDescriptor, "Foundone");
             end
-            $fwrite(fileDescriptor, "\n");
+            $display("\n");
+            //$fwrite(fileDescriptor, "\n");
         end
 
         $fclose(fileDescriptor);
         $display("File write complete");
+        $stop;
     end
+end
+always @(posedge clk) begin
+    // if(done) begin
+    //     $display("Done");
+    // end
+    if (valid) begin
+
+        read(.parallelx(x), .parallely(y), 
+        .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
+        //$display("Color found: %d",color);
+        screen[y[15:6]][x[15:6]] <= color;
+        ready  <= 0;
+        readx  <= 0;
+        readc  <= 0;
+    end 
+
+
+
 end
 
 

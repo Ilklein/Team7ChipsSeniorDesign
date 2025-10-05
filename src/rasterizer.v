@@ -50,11 +50,19 @@ wire piso3_done;
 
 reg signed [15:0] xpos, ypos; // current values to go to the 3 PISO modules
 reg [15:0] color;
+wire [7:0] count;
+
+counter #(.MAX(143), .WIDTH(8))chip_counter (
+    .clk(CLK),
+    .rst(RST),
+    .count(count)
+);
 
 SIPO s1 (
     .clk(CLK),
     .rst(RST),
     .in(D),
+    .count(count),
     .valid_data(DONE),
     .sipo_done(sipo_done),
     .out({v0x, v1x, v2x, v0y, v1y, v2y, c0, c1, c2})
