@@ -184,6 +184,7 @@ PISO p3 (
 always @(posedge CLK or posedge RST) begin
     VALID <= 0; // should valid stay high for 16 cycles?
     DONE <= 0; // pulses high when done with triangle
+    iw_start <= 0;
     if(RST) begin
         xspan_pix <= 0;
         yspan_pix <= 0;
