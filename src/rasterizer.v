@@ -57,7 +57,7 @@ SIPO s1 (
     .in(D),
     .valid_data(DONE),
     .sipo_done(sipo_done),
-    .out({v0x, v0y, c0, v1x, v1y, c1, v2x, v2y, c2})
+    .out({v0x, v1x, v2x, v0y, v1y, v2y, c0, c1, c2})
 );
 
 boundingbox bb (
