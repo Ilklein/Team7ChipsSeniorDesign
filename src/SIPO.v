@@ -8,7 +8,7 @@ module SIPO (
 );
     
 reg [7:0] count;
-reg busy;
+reg busy = 0;
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
