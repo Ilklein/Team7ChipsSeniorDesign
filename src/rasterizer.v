@@ -79,6 +79,7 @@ wire piso2_done;
 wire piso3_done;
 
 reg signed [15:0] xpos, ypos; // current values to go to the 3 PISO modules
+reg signed [15:0] xpos_out, ypos_out;
 reg [15:0] color;
 
 SIPO s1 (
@@ -158,7 +159,7 @@ interpolation_weights iw (
 PISO p1 (
     .clk(CLK),
     .rst(RST),
-    .in(xpos),
+    .in(xpos_out),
     .valid_data(VALID),
     .piso_done(piso1_done),
     .out(PX)
@@ -166,7 +167,7 @@ PISO p1 (
 PISO p2 (
     .clk(CLK),
     .rst(RST),
-    .in(ypos),
+    .in(ypos_out),
     .valid_data(VALID),
     .piso_done(piso2_done),
     .out(PY)
@@ -260,6 +261,8 @@ always @(posedge CLK or posedge RST) begin
     // simplified using De Morgan's from !((!piso1_done || !piso2_done || !piso3_done) && VALID)
     if(coloring_ready && ((piso1_done && piso2_done && piso3_done) || !VALID)) begin // wait for PISOs to finish before changing inputs
         if(yrem != 0) begin
+            xpos_out <= xpos;
+            ypos_out <= ypos;
             if(xrem != 0) begin
                 if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0) begin // check edges, pixels should be input CCW on screen(CW in coord system)
                     if(interp_done) begin // wait for interpolation weights to be calculated
