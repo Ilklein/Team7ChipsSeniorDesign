@@ -29,7 +29,6 @@ always @(posedge clk or posedge rst) begin
         w0 <= 32'sd0;
         w1 <= 32'sd0;
         w2 <= 32'sd0;
-        mult_result <= 32'sd0;
         A <= 16'sd0;
         B <= 16'sd0;
         count <= 2'd0;
