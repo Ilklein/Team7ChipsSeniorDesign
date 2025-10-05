@@ -5,13 +5,13 @@ module boundingbox(
     input [15:0] v0y,
     input [15:0] v1y,
     input [15:0] v2y,
-<<<<<<< HEAD
+
     input clk,
     output [15:0] xmin,
     output [15:0] xmax,
     output [15:0] ymin,
     output [15:0] ymax
-=======
+
     input [7:0] count,
     input EN,
     input CLK,
@@ -19,7 +19,7 @@ module boundingbox(
     output [15:0] XMAX,
     output [15:0] YMIN,
     output [15:0] YMAX
->>>>>>> 64d35e6f30e222faab35dd1cf6ce1e8e736f7353
+
 );
 
     wire [15:0] xma, xmi, yma, ymi;
@@ -101,6 +101,7 @@ endmodule
             end
         end
     endmodule
+
 
 
 
