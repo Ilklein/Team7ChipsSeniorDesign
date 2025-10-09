@@ -1,4 +1,4 @@
-module rasterizer_tb()
+module rasterizer_tb();
 
 //         input wire CLK,
 //         input wire RST,
@@ -9,14 +9,19 @@ module rasterizer_tb()
 //         output reg VALID, // output pixel valid
 //         output reg DONE // done with current triangle
 
-input clk;
-input rst;
-input d;
-output c;
-output px;
-output py;
-output valid;
-output done;
+
+//Inputs to rasterizer
+logic clk;
+logic rst;
+logic d;
+
+//Outputs of rasterizer
+logic c;
+logic px;
+logic py;
+logic valid;
+logic done;
+
 
 logic [15:0] x1;
 logic [15:0] x2;
@@ -27,70 +32,131 @@ logic [15:0] y3;
 logic [15:0] c1 = 16'b1111100000000001; //red 
 logic [15:0] c2 = 16'b0000011111000001; //green
 logic [15:0] c3 = 16'b0000000000111110; //blue
-logic [143:0] in;
+logic [143:0] vec;
 
 logic [15:0] screen [239:0][319:0];
-logic [8:0] x;
+logic [15:0] x;
 logic readx = 0;
-logic [8:0] y;
+logic [15:0] y;
 logic ready = 0;
 logic [15:0] color;
 logic readc = 0;
 int fileDescriptor;
+logic [15:0] y_display, x_display, color_display;
+assign color_display = chip.color;
+assign x_display = chip.xpos_out;
+assign y_display = chip.ypos_out;
 
-logic read;
+//logic read;
 
 rasterizer chip (.CLK(clk), .RST(rst), .D(d), .C(c), .PX(px), .PY(py), .VALID(valid), .DONE(done)); //instaniate register
 
+
+task counterclockwise;
+    input [9:0] a;
+    input [9:0] b;
+    input [9:0] c;
+    output [9:0] x1;
+    output [9:0] x2;
+    output [9:0] x3;
+
+
+    if(b > a && b > c) begin  //b is rightmost 
+        x1 = b;
+        if(a > c) begin //c is leftmost
+            x2 = c;
+            x3 = a;
+        end else begin //a is leftmost
+            x2 = a;
+            x3 = c;
+        end
+    end
+    else if(c > a && c > b) begin //c is rightmost
+        x1 = c;
+        if(b > a) begin //a is leftmost
+            x2 = a;
+            x3 = b;
+        end else begin //b is leftmost
+            x2 = b;
+            x3 = a;
+        end
+    end 
+    else begin //a is rightmost
+        x1 = a;
+        if(b > c) begin //c is leftmost
+            x2 = c;
+            x3 = b;
+        end
+        else begin //b is leftmost
+            x2 = b;
+            x3 = c;
+        end
+
+    end
+
+endtask
+
+
 task makeTriangle;
-    output x1 [15:0];
-    output x2 [15:0];
-    output x3 [15:0];
-    output y1 [15:0];
-    output y2 [15:0];
-    output y3 [15:0];
+    output [15:0] x1;
+    output [15:0] x2;
+    output [15:0] x3;
+    output [15:0] y1;
+    output [15:0] y2;
+    output [15:0] y3;
 
 
-    wire xa [9:0];
-    wire xb [9:0];
-    wire xc [9:0];
-    wire ya [9:0];
-    wire yb [9:0];
-    wire yc [9:0];
+    logic [9:0] xa;
+    logic [9:0] xb;
+    logic [9:0] xc;
+    logic [9:0] ya;
+    logic [9:0] yb;
+    logic [9:0] yc;
 
-    wire xg [5:0];
-    wire xh [5:0];
-    wire xi [5:0];
-    wire yg [5:0];
-    wire yh [5:0];
-    wire yi [5:0];
+    logic [5:0] xg;
+    logic [5:0] xh;
+    logic [5:0] xi;
+    logic [5:0] yg;
+    logic [5:0] yh;
+    logic [5:0] yi;
 
 
-    int a,b,c,d,e,f;
-    a = {$random} % 321;
-    b = {$random} % 321;
-    c = {$random} % 321;
+    logic[31:0] a,b,c,d,e,f;
+    logic [5:0] g, h, i, j, k, l;
 
-    d = {$random} % 241;
-    e = {$random} % 241;
-    f = {$random} % 241;
-    counterclockwise(.a(a), .b(b), .c(c), .x1(xa), .x2(xb), .x3(xc));
-    ya = d >>> 22;
-    yb = e >>> 22;
-    yc = f >>> 22;
+    a = $urandom_range(0,320);
+    b = $urandom_range(0,320);
+    c = $urandom_range(0,320);
 
-    int g, h, i, j, k, l;
-    g = {$random} % 64;
-    h = {$random} % 64;
-    i = {$random} % 64;
+    d = $urandom_range(0,240);
+    e = $urandom_range(0,240);
+    f = $urandom_range(0,240);
 
-    j = {$random} % 64;
-    k = {$random} % 64;
-    l = {$random} % 64;
 
-    xg = i >>> 26;
-    xh = j >>> 26;
-    xi = k >>> 26;
+
+    counterclockwise(.a(a[9:0]), .b(b[9:0]), .c(c[9:0]), .x1(xa), .x2(xb), .x3(xc));
+
+    
+    ya = d[9:0];
+    yb = e[9:0];
+    yc = f[9:0];
+   
+
+    g = $urandom_range(0,64);
+    h = $urandom_range(0,64);
+    i = $urandom_range(0,64);
+
+    j = $urandom_range(0,64);
+    k = $urandom_range(0,64);
+    l = $urandom_range(0,64);
+
+    xg = g[5:0];
+    xh = h[5:0];
+    xi = i[5:0];
+
+    yg = j[5:0];
+    yh = k[5:0];
+    yi = l[5:0];
 
     x1 = {xa,xg};
     x2 = {xb,xh};
@@ -98,77 +164,51 @@ task makeTriangle;
 
     y1 = {ya,yg};
     y2 = {yb,yh};
-    x3 = {yc,yi};
+    y3 = {yc,yi};
+
+
 
 endtask
 
-task counterclockwise;
-    input a;
-    input b;
-    input c;
-
-
-    output x1 [9:0];
-    output x2 [9:0];
-    output x3 [9:0];
-
-
-    if(b > a && b > c) begin  //b is rightmost 
-        x1 = b >>> 22;
-        y1 = e >>>
-        if(a > c) begin //c is leftmost
-            x2 = c >>> 22;
-            x3 = a >>> 22;
-        end else begin //a is leftmost
-            x2 = a >>> 22;
-            x3 = c >>> 22;
-        end
-    end
-    else if(c > a && c > b) begin //c is rightmost
-        x1 = c >>> 22;
-        if(b > a) begin //a is leftmost
-            x2 = a >>> 22;
-            x3 = b >>> 22;
-        end else begin //b is leftmost
-            x2 = b >>> 22;
-            x3 = a >>> 22;
-        end
-    end 
-    else begin //a is rightmost
-        x1 = a >>> 22;
-        if(b > c) begin //c is leftmost
-            x2 = c >>> 22;
-            x3 = b >>> 22;
-        end
-        else begin //b is leftmost
-            x2 = b >>> 22;
-            x3 = c >>> 22;
-        end
-
-    end
-
-endtask
 
 task sendserial;
-    input message[143:0];
-    int i;
-    for(i = 0; i < 143; i++) begin
-        in = message[i];
+    input [143:0] message;
+    integer i;
+    begin
+    for(i = 0; i < 144; i++) begin
+        d = message[i];
         #2;
     end
-endtask
-
-task read;
-
-    input toRead;
-    output [15:0] parallel;
-
-    for(int i = 0; i < 16; i++) begin
-    parallel <= {toRead, parallel[15:1]};
     end
+endtask
 
+task  read;
+
+    // input toReadx;
+    // input toReady;
+    // input toReadc;
+
+    output [15:0] parallelx;
+    output [15:0] parallely;
+    output [15:0] parallelc;
+
+    output donex;
+    output doney;
+    output donec;
+    begin
+    for(int i = 0; i < 16; i++) begin
+    parallelx = {px, parallelx[15:1]};
+    parallely = {py, parallely[15:1]};
+    parallelc = {c, parallelc[15:1]};
+    #2;
+    end
+    end
+    donex <= 1;
+    doney <= 1;
+    donec <= 1;
 
 endtask
+
 
 always begin
     clk = 1;
@@ -178,49 +218,84 @@ always begin
 end
 
 initial begin
+    //makeTriangle(.x1(x1), .x2(x2), .x3(x3), .y1(y1), .y2(y2), .y3(y3));
+    // x1 = 16'b0000111111000000;
+    // x2 = 16'b0000000000000000;
+    // x3 = 16'b0000000001000000;
 
-    makeTriangle(.x1(x1), .x2(x2), .x3(x3), .y1(y1), .y2(y2), .y3(y3));
-    in = {x1,x2,x3,y1,y2,y3,c1,c2,c3};
-    sendserial(in); 
+    // y1 = 16'b0000111111000000;
+    // y2 = 16'b0000000000000000;
+    // y3 = 16'b0000000001000000;
+    for (int i = 0; i < 240; i++) begin
+        for (int j = 0; j < 320; j++) begin
+            screen[i][j] = 16'b0;
+        end
+    end
+    x1 = {10'd0,6'd0};
+    x2 = {10'd8,6'd0};
+    x3 = {10'd8,6'd0};
+
+    y1 = {10'd0,6'd0};
+    y2 = {10'd0,6'd0};
+    y3 = {10'd8,6'd0};
+
+    vec = {x1, x2, x3, y1, y2, y3, c1, c2, c3};
+    rst = 1;
+    #4;
+    rst = 0;
+    sendserial(.message(vec));
     
 end
 
-    always@(posedge clk) begin 
-        if(chip.out_ready) begin 
-            read(px, readx, x);
-            read(py, ready, y);
-            read(c, readc, color);
-
-            if(readx && ready && readc) begin
-                screen[y][x] = color;
-                ready = 0;
-                readx = 0;
-                readz = 0;
-            end
+always@(negedge clk) begin
+        if (done) begin
+        integer fileDescriptor;
+        fileDescriptor = $fopen("\\wsl.localhost\Ubuntu\home\isgray\Class\Chip\Team7ChipsSeniorDesign\sim\out.txt", "w");
+        if (fileDescriptor == 0) begin
+            $display("File NOT opened successfully");
         end
-        if(done) begin // I think this is everything has been outputted
-            //Dump to file;
-            fileDescriptor = $fopen("out.txt","w");
-
-            if(fileDescriptor == 0) begin
-                $display("File NOT opened succesfully");
+        for (int i = 0; i < 10; i++) begin
+            for (int j = 0; j < 10; j++) begin
+                //if(screen[i][j]) begin
+                   //$write( "%d,", screen[i][j]);
+                //end
+                //$fwrite(fileDescriptor, "%d,", screen[i][j]);
+                $fwrite(fileDescriptor, "Foundone");
             end
-
-            for(int i = 0; i < 240; i++) begin
-                for(int j = 0; j < 320; j++) begin
-                    $write(screen[i][j]);
-                    $fwrite(fileDescriptor,"%d,", screen[i][j]);
-                end
-                $write("\n");
-            end
-
-
+            $display("\n");
+            //$fwrite(fileDescriptor, "\n");
+        end
 
         $fclose(fileDescriptor);
-
-        end//start reading outputs
-
+        $display("File write complete");
+        $stop;
     end
+end
+always @(posedge valid) begin
+    // if(done) begin
+    //     $display("Done");
+    // end
+    //if (valid) begin
+
+         read(.parallelx(x), .parallely(y), 
+         .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
+        
+        //y_display = chip.ypos;
+        //x_display = chip.xpos;
+        //color_display = chip.color;
+        $display("Valid Pixel (%d,%d)",parallelx >>> 6,parallely >>> 6);
+        screen[y_display[15:6]][x_display[15:6]] <= color_display;
+        ready  <= 0;
+        readx  <= 0;
+        readc  <= 0;
+
+   //end
+
+
+
+end
+
+
 
 
 

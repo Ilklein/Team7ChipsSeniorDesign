@@ -34,7 +34,7 @@ fixed_point_div div (
     .result(div_result)
 );
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     area_done <= 0;
     if (rst) begin
         area_012_reciprocal <= 16'sd0;

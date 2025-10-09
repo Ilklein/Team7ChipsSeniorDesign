@@ -23,7 +23,7 @@ fixed_point_mult mult (
     .result(mult_result)
 );
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     interp_done <= 0;
     if (rst) begin
         w0 <= 32'sd0;

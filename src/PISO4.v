@@ -11,7 +11,7 @@ reg [1:0] count;
 reg [3:0] temp;
 reg busy;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk) begin
     if (rst) begin
         temp <=0;
         count <= 0;
