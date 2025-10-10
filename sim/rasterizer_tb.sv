@@ -231,6 +231,11 @@ initial begin
             screen[i][j] = 16'b0;
         end
     end
+    //$display("PWD: %s", $getcwd());
+    fileDescriptor = $fopen("./out.txt", "w");
+    //$display("FD: %d",fileDescriptor);
+
+
     x1 = {10'd0,6'd0};
     x2 = {10'd8,6'd0};
     x3 = {10'd8,6'd0};
@@ -249,47 +254,44 @@ end
 
 always@(negedge clk) begin
         if (done) begin
-        integer fileDescriptor;
-        fileDescriptor = $fopen("\\wsl.localhost\Ubuntu\home\isgray\Class\Chip\Team7ChipsSeniorDesign\sim\out.txt", "w");
-        if (fileDescriptor == 0) begin
-            $display("File NOT opened successfully");
-        end
-        for (int i = 0; i < 10; i++) begin
-            for (int j = 0; j < 10; j++) begin
-                //if(screen[i][j]) begin
-                   $write( "%d,", screen[i][j]);
-                //end
-                //$fwrite(fileDescriptor, "%d,", screen[i][j]);
-                $fwrite(fileDescriptor, "Foundone");
+            for (int i = 0; i < 10; i++) begin
+                for (int j = 0; j < 10 ; j++) begin
+                    //if(screen[i][j]) begin
+                    $write( "%d,", screen[i][j]);
+                    //end
+                    $fwrite(fileDescriptor, "%d,", screen[i][j]);
+                    //$fwrite(fileDescriptor, "Foundone");
+                end
+                $display("\n");
+                $fwrite(fileDescriptor, "\n");
             end
-            $display("\n");
-            //$fwrite(fileDescriptor, "\n");
+            $display("File write complete");
+            $fclose(fileDescriptor);
+            $stop;
         end
 
-        $fclose(fileDescriptor);
-        $display("File write complete");
-        $stop;
     end
-end
-always @(posedge valid) begin
+
+always @(posedge clk) begin
     // if(done) begin
     //     $display("Done");
     // end
-    //if (valid) begin
-
-        // read(.parallelx(x), .parallely(y), 
-        // .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
+    if (valid) begin
         
+        read(.parallelx(x), .parallely(y), 
+        .parallelc(color), .donex(readx), .doney(ready), .donec(readc));
+        //$display("test");
         //y_display = chip.ypos;
         //x_display = chip.xpos;
         //color_display = chip.color;
         //$display("Valid Pixel (%d,%d)",y_display >>> 6,x_display >>> 6);
-        screen[y_display[15:6]][x_display[15:6]] <= color_display;
+        //screen[y_display[15:6]][x_display[15:6]] <= color_display;
+        screen[y_display[15:6]][x_display[15:6]] <= color;
         ready  <= 0;
         readx  <= 0;
         readc  <= 0;
 
-   //end
+   end
 
 
 

@@ -7,7 +7,7 @@ module PISO (
     output reg out
 );
 
-reg [3:0] count;
+reg [4:0] count;
 reg [15:0] temp;
 reg busy;
 
@@ -31,7 +31,7 @@ always @(posedge clk or posedge rst) begin
         temp <= {1'b0, temp[15:1]};
         count <= count + 1;
 
-        if (count == 14) begin
+        if (count == 15) begin
             busy <= 0;
             piso_done <= 1;
             count <= 0;

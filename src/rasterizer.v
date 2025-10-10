@@ -44,6 +44,8 @@ wire sipo_done; // control signals
 reg bb_done;
 reg coloring_ready;
 reg out_ready;
+reg pixel_done;
+reg piso_ready;
 wire piso1_done;
 wire piso2_done;
 wire piso3_done;
@@ -122,7 +124,7 @@ PISO p1 (
     .clk(CLK),
     .rst(RST),
     .in(xpos_out),
-    .valid_data(out_ready),
+    .valid_data(pixel_done),
     .piso_done(piso1_done),
     .out(PX)
 );
@@ -130,7 +132,7 @@ PISO p2 (
     .clk(CLK),
     .rst(RST),
     .in(ypos_out),
-    .valid_data(out_ready),
+    .valid_data(pixel_done),
     .piso_done(piso2_done),
     .out(PY)
 );
@@ -138,13 +140,13 @@ PISO p3 (
     .clk(CLK),
     .rst(RST),
     .in(color),
-    .valid_data(out_ready),
+    .valid_data(pixel_done),
     .piso_done(piso3_done),
     .out(C)
 );
 
 always @(posedge CLK or posedge RST) begin
-    VALID <= 0; // should valid stay high for 16 cycles?
+    //VALID <= 0; // should valid stay high for 16 cycles?
     DONE <= 0; // pulses high when done with triangle
     if(RST) begin
         xspan_pix <= 0;
@@ -159,6 +161,7 @@ always @(posedge CLK or posedge RST) begin
         bb_done <= 0;
         coloring_ready <= 0;
         out_ready <= 0;
+        VALID <= 0;
     end
     else if(sipo_done && !bb_done) begin //after 144 cycles, we have the full triangle, calculate bounding box
         V0X <= v0x;
@@ -177,6 +180,7 @@ always @(posedge CLK or posedge RST) begin
         xpos <= xmin;
         ypos <= ymin;
         bb_done <= 1;
+        //VALID <= 1;
     end
     else if(bb_done && !coloring_ready) begin //after 145 cycles, we have the bounding box, calculate edge functions at top-left corner
         edge1 <= e1;
@@ -193,22 +197,43 @@ always @(posedge CLK or posedge RST) begin
         B3 <= b3;
         bb_done <= 0;
         coloring_ready <= 1;
-    end
-    
-    if(coloring_ready && !((!piso1_done || !piso2_done || !piso3_done) && out_ready)) begin // wait for PISOs to finish before changing inputs
+        //VALID <= 0;
+    end  
+    // if(pixel_done) begin    
+    //     piso_ready <= 1;
+    //     pixel_done <= 0;
+    // end
+
+    // if(VALID) begin 
+    //     out_ready <= 1;
+    //     VALID <= 0;
+    // end
+        if(pixel_done) begin
+            pixel_done <= 0;
+            VALID <= 0;
+        end
+
+        if(coloring_ready && !((!piso1_done || !piso2_done || !piso3_done) && out_ready)) begin  // wait for PISOs to finish before changing inputs
+        
         if(yrem != 0) begin
+            pixel_done <= 1;
             xpos_out <= xpos;
             ypos_out <= ypos;
             if(xrem != 0) begin
+                //pixel_done <= 1;
                 if(edge1 >= 0 && edge2 >= 0 && edge3 >= 0) begin // check edges, pixels should be input CCW on screen(CW in coord system)
                     color <= c0; // change if interpolation is added
                     VALID <= 1; // pixel is in triangle
+                    //pixel_done <= 1;
                 end
                 else begin
+                    
                     color <= 16'b0; //background color
                     VALID <= 0; // pixel not in triangle
+                    //pixel_done <= 1;
                 end
-                // $display("%d",xpos[15:6]);
+
+                //$display("%d",xpos[15:6]);
                 // $display("%d.%d",edge1[31:12],edge1[11:0]);
                 // $display("%d.%d",edge2[31:12],edge2[11:0]);
                 // $display("%d.%d",edge3[31:12],edge3[11:0]);
