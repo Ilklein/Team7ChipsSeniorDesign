@@ -1,8 +1,8 @@
-module interpolation_weights(
+module interpolation_weights_old(
     input wire clk,
     input wire rst,
     input wire valid_data,
-    input wire signed [15:0] area_012_reciprocal,
+    input wire signed [15:0] area_012,
     input wire signed [15:0] area_p12,
     input wire signed [15:0] area_0p2,
     input wire signed [15:0] area_01p,
@@ -15,12 +15,12 @@ module interpolation_weights(
 reg [1:0] count;
 reg busy;
 reg signed [15:0] A, B;
-wire signed [31:0] mult_result;
+wire signed [31:0] div_result;
 
-fixed_point_mult mult (
+fixed_point_div div (
     .a(A),
     .b(B),
-    .result(mult_result)
+    .result(div_result)
 );
 
 always @(posedge clk) begin
@@ -41,19 +41,19 @@ always @(posedge clk) begin
             count <= 2'd0;
             busy <= 1;
             A <= area_p12[15:0];
-            B <= area_012_reciprocal[15:0];
+            B <= area_012[15:0];
         end
         else if (busy) begin
             if (count == 0) begin
-                w0 <= mult_result;
+                w0 <= div_result;
                 A <= area_0p2[15:0];
-                B <= area_012_reciprocal[15:0];
+                B <= area_012[15:0];
             end else if (count == 1) begin
-                w1 <= mult_result;
+                w1 <= div_result;
                 A <= area_01p[15:0];
-                B <= area_012_reciprocal[15:0];
+                B <= area_012[15:0];
             end else if (count == 2) begin
-                w2 <= mult_result;
+                w2 <= div_result;
                 count <= 2'd0;
                 interp_done <= 1;
                 busy <= 0;

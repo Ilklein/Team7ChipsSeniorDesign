@@ -1,66 +1,92 @@
 module edge_function(
-    input  wire signed [15:0] v0x,
-    input  wire signed [15:0] v0y,
-    input  wire signed [15:0] v1x,
-    input  wire signed [15:0] v1y,
-    input  wire signed [15:0] v2x,
-    input  wire signed [15:0] v2y,
-    input  wire signed [15:0] px,
-    input  wire signed [15:0] py,
-    output wire signed [31:0] e1,
-    output wire signed [31:0] e2,
-    output wire signed [31:0] e3,
-    output wire signed [15:0] a1,
-    output wire signed [15:0] a2,
-    output wire signed [15:0] a3,
-    output wire signed [15:0] b1,
-    output wire signed [15:0] b2,
-    output wire signed [15:0] b3
+    input wire clk,
+    input wire rst,
+    input wire valid_data,
+    input wire signed [15:0] v0x,
+    input wire signed [15:0] v0y,
+    input wire signed [15:0] v1x,
+    input wire signed [15:0] v1y,
+    input wire signed [15:0] v2x,
+    input wire signed [15:0] v2y,
+    input wire signed [15:0] px,
+    input wire signed [15:0] py,
+    input wire signed [15:0] a1,
+    input wire signed [15:0] a2,
+    input wire signed [15:0] a3,
+    input wire signed [15:0] b1,
+    input wire signed [15:0] b2,
+    input wire signed [15:0] b3,
+    output reg signed [31:0] e1,
+    output reg signed [31:0] e2,
+    output reg signed [31:0] e3,
+    output reg edge_done
 );
     
-    wire signed [31:0] m1, m2, m3, m4, m5, m6;
+reg [2:0] count;
+reg busy;
+reg signed [15:0] A, B;
+wire signed [31:0] mult_result;
+reg signed [31:0] m1, m2;
 
-    assign a1 = v0y - v1y;
-    assign b1 = v1x - v0x;
-    fixed_point_mult mult1 (
-	.a(px - v0x),
-	.b(a1),
-	.result(m1)
-    );
-    fixed_point_mult mult2 (
-	.a(py - v0y),
-	.b(b1),
-	.result(m2)
-    );
+fixed_point_mult mult (
+    .a(A),
+    .b(B),
+    .result(mult_result)
+);
 
-    assign a2 = v1y - v2y;
-    assign b2 = v2x - v1x;
-    fixed_point_mult mult3 (
-	.a(px - v1x),
-	.b(a2),
-	.result(m3)
-    );
-    fixed_point_mult mult4 (
-	.a(py - v1y),
-	.b(b2),
-	.result(m4)
-    );
-
-    assign a3 = v2y - v0y;
-    assign b3 = v0x - v2x;
-    fixed_point_mult mult5 (
-	.a(px - v2x),
-	.b(a3),
-	.result(m5)
-    );
-    fixed_point_mult mult6 (
-	.a(py - v2y),
-	.b(b3),
-	.result(m6)
-    );
-        
-    assign e1 = m1 + m2;
-    assign e2 = m3 + m4;
-    assign e3 = m5 + m6;
+always @(posedge clk) begin
+    edge_done <= 0;
+    if (rst) begin
+        e1 <= 32'sd0;
+        e2 <= 32'sd0;
+        e3 <= 32'sd0;
+        m1 <= 32'sd0;
+        m2 <= 32'sd0;
+        A <= 16'sd0;
+        B <= 16'sd0;
+        count <= 3'd0;
+        busy <= 0;
+    end else begin
+        if (valid_data && !busy) begin
+            count <= 3'd0;
+            busy <= 1;
+            A <= px - v0x;
+            B <= a1;
+        end
+        else if (busy) begin
+            if (count == 0) begin
+                m1 <= mult_result;
+                A <= py - v0y;
+                B <= b1;
+            end else if (count == 1) begin
+                m2 <= mult_result;
+                A <= px - v1x;
+                B <= a2;
+            end else if (count == 2) begin
+                e1 <= m1 + m2;
+                m1 <= mult_result;
+                A <= py - v1y;
+                B <= b2;
+            end else if (count == 3) begin
+                m2 <= mult_result;
+                A <= px - v2x;
+                B <= a3;
+            end else if (count == 4) begin
+                e2 <= m1 + m2;
+                m1 <= mult_result;
+                A <= py - v2y;
+                B <= b3;
+            end else if (count == 5) begin
+                m2 <= mult_result;
+            end else if (count == 6) begin
+                e3 <= m1 + m2;
+                count <= 3'd0;
+                edge_done <= 1;
+                busy <= 0;
+            end 
+            count <= count + 1;
+        end  
+    end
+end
 
 endmodule

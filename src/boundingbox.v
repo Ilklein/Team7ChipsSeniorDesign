@@ -59,8 +59,8 @@ endmodule
 
         always @(*) begin
             //if(count == 95) begin
-                if(p1[15:6] > p2[15:6]) begin
-                    if(p1[15:6] > p3[15:6]) begin
+                if(p1[15:0] > p2[15:0]) begin
+                    if(p1[15:0] > p3[15:0]) begin
                         max = p1;
                     end 
                     else begin
@@ -68,7 +68,7 @@ endmodule
                     end 
                 end
                 else begin//(p2>=p1)
-                    if(p2[15:6] > p3[15:6]) begin
+                    if(p2[15:0] > p3[15:0]) begin
                         max = p2;
                     end
                     else begin //(p3>=p2) 
@@ -88,8 +88,8 @@ endmodule
         );
         always @(*) begin
             //if(count == 95) begin
-                if(p1[15:6] < p2[15:6]) begin
-                    if(p1[15:6] < p3[15:6]) begin
+                if(p1[15:0] < p2[15:0]) begin
+                    if(p1[15:0] < p3[15:0]) begin
                         min = p1;
                     end 
                     else begin
@@ -97,7 +97,7 @@ endmodule
                     end 
                 end
                 else begin//(p2<=p1)
-                    if(p2[15:6] < p3[15:6]) begin
+                    if(p2[15:0] < p3[15:0]) begin
                         min = p2;
                     end
                     else begin //(p3<=p2) 

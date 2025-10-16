@@ -16,7 +16,7 @@ class color:
         self.alpha = a
         
 screen = []
-with open("C:/intelFPGA/20.1/out_screen.txt", newline='') as csvfile:
+with open("./gold_plot.txt", newline='') as csvfile:
 
     plotreader = csv.reader(csvfile, delimiter=',')
     for i,row in enumerate(plotreader):
@@ -28,7 +28,7 @@ with open("C:/intelFPGA/20.1/out_screen.txt", newline='') as csvfile:
                 continue
             decimal = int(num)
             r = ((decimal >> 11) & 0x1F) / 31.0
-            g = ((decimal >> 6) & 0x1F) / 31.0
+            g = ((decimal >> 5) & 0x1F) / 31.0
             b = ((decimal >> 1) & 0x1F) / 31.0
             a = decimal & 1
             c = color(r,g,b,a)
@@ -45,10 +45,9 @@ for i in range(len(screen)):
         img[i, j, :] = [c.red, c.green, c.blue, 1]
 
 
-
 plt.imshow(img)
 plt.axis('off')
-plt.savefig("./test.png", bbox_inches='tight', pad_inches=0)
+plt.savefig("./gold.png", bbox_inches='tight', pad_inches=0)
 
 
 
