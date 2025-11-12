@@ -17,7 +17,7 @@ module boundingbox(
     // assign xmin_unrounded = (v0x < v1x) ? ((v0x < v2x) ? v0x : v2x) : ((v1x < v2x) ? v1x : v2x);
     // assign ymax_unrounded = (v0y > v1y) ? ((v0y > v2y) ? v0y : v2y) : ((v1y > v2y) ? v1y : v2y);
     // assign ymin_unrounded = (v0y < v1y) ? ((v0y < v2y) ? v0y : v2y) : ((v1y < v2y) ? v1y : v2y);
-    
+
     maximum xmax_mod (.p1(v0x), .p2(v1x), .p3(v2x), .max(xmax_unrounded));
     minimum xmin_mod (.p1(v0x), .p2(v1x), .p3(v2x), .min(xmin_unrounded));
     maximum ymax_mod (.p1(v0y), .p2(v1y), .p3(v2y), .max(ymax_unrounded));

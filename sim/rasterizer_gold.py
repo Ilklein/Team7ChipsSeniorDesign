@@ -19,6 +19,7 @@ gold_screen = [[0 for i in range(321)] for j in range(241)]
 c0 = 63489
 c1 = 1985
 c2 = 63
+t = 1
 
 color = 1
 with open("triangles.txt","r") as triangleList:
@@ -57,7 +58,9 @@ with open("triangles.txt","r") as triangleList:
         y2f = math.floor(float(point[5])) + decy2
         
         # area = .5* x0f * (y1f - y2f) + x1f * (y2f - y0f) + x2f * (y0f - y1f)
-        area = 0.5 * ((x1f - x0f) * (y2f - y0f) - (x2f - x0f) * (y1f - y0f))
+        area = ((x1f - x0f) * (y2f - y0f) - (x2f - x0f) * (y1f - y0f))
+        if area == 0:
+            area = 1
         
         
         xmax = max(math.floor(x0f+.5), math.floor(x1f+.5), math.floor(x2f+.5))
@@ -86,13 +89,7 @@ with open("triangles.txt","r") as triangleList:
         e1_prev = e1 
         e2_prev = e2
         e3_prev = e3
-        e1_y = e1
-        e2_y = e2
-        e3_y = e3
-        
-        e1_x = e1
-        e2_x = e2
-        e3_x = e3
+
         
         s1x = round((-y1f + y0f),4)
         s1y = round((x1f - x0f),4)
@@ -103,55 +100,66 @@ with open("triangles.txt","r") as triangleList:
         # if(e1 >= 0 and e2 >= 0 and e3 >= 0): #in the triangle
         #             screen[(xmin,ymin)] = color
                     
-        for i in range(ymin,ymax):
-            for j in range(xmin,xmax):
+        for i in range(ymin,ymax + 1):
+            for j in range(xmin,xmax + 1):
                 
                 
                 
                 x = j + .5
                 y = i + .5
                 
-                l0_area = 0.5 * (x1f * (y2f - i) + x2f * (i - y1f) + j * (y1f - y2f))
-                l1_area = 0.5 * (x2f * (y0f - i) + x0f * (i - y2f) + j * (y2f - y0f))
-                l2_area = 0.5 * (x0f * (y1f - i) + x1f * (i - y0f) + j * (y0f - y1f))
+                # l0_area = 0.5 * (x1f * (y2f - i) + x2f * (i - y1f) + j * (y1f - y2f))
+                # l1_area = 0.5 * (x2f * (y0f - i) + x0f * (i - y2f) + j * (y2f - y0f))
+                # l2_area = 0.5 * (x0f * (y1f - i) + x1f * (i - y0f) + j * (y0f - y1f))
                 
 
+                e1_adjusted = e1 - .5 * s1x - .5 * s1y
                 
-                l0 = l0_area / area
+                l0 = e1_adjusted / area
+                l0 = normalize(l0)
                 w0 = int(c0 * l0)
                 
                 w0 = w0 >> 11
                 w0 = w0 & 31
+                # print(f"({w0},",end="")
                 w0 = w0 << 11
                 
-                l1 = l1_area / area
+                e2_adjusted = e2 - .5 * s2x - .5 * s2y
+                l1 = e2_adjusted / area
+                l1 = normalize(l1)
                 w1 = int(c1 * l1)
                 
                 w1 = w1 >> 6
                 w1 = w1 & 31
+                # print(f"{w1},",end="")
                 w1 = w1 << 6
                     
-                l2 = l2_area / area
+                e3_adjusted = e3 - .5 * s3x - .5 * s3y
+                l2 = e3_adjusted / area
+                l2 = normalize(l2)
                 w2 = int(l2 * c2)
                 
                 w2 = w2 >> 1
                 w2 = w2 & 31
+                # print(f"{w2})", end="")
                 w2 = w2 << 1
 
                 
-                # print(f"y: {y}, x: {x}, l0_area: {l0_area}, l1_area: {l1_area}, l2_area: {l2_area}")
-                color = w0 + w1 + w2
+                # print(f"y: {y}, x: {x}, w0: {w0}, w1: {w1}, w2: {w2}")
+                color = w0 + w1 + w2 + t
                 
-                # print(f"x: {x}, y: {y}")
-                # print(f"e1: {e1}, e2: {e2}, e3: {e3}, c: {color}")
-                
+                # print(f"x: {x}, y: {y} ", end="")
+                # print(f"({e1},{e2},{e3})")
+                # print(f"({l0*64}, {64*l1}, {64*l2}), ", end="")
+                # print(f"({color}), ", end="")
                 
                 if(e1 >= 0 and e2 >= 0 and e3 >= 0): #in the triangle
                     screen[(i,j)] = color
+                    # print(f"{i}, {j}, {color}")
                 e1 = e1 + s1x
                 e2 = e2 + s2x
                 e3 = e3 + s3x
-                
+            # print(" ")
             e1_prev = e1_prev + s1y
             e1 = e1_prev
             
@@ -167,26 +175,41 @@ with open("triangles.txt","r") as triangleList:
             y = int(p[1])
             c = int(p[2])
             rtlScreen[(y,x)] = c
+    different = False
     if(rtlScreen.keys() == screen.keys()):
-        print("SUCCESS")
+        for rtlcolor, goldcolor in zip (rtlScreen.values(), screen.values()):
+            r_rtl = (rtlcolor >> 11) & 31
+            g_rtl = (rtlcolor >> 6) & 31
+            b_rtl = (rtlcolor >> 1) & 31
+            
+            r_gold = (rtlcolor >> 11) & 31
+            g_gold = (rtlcolor >> 6) & 31
+            b_gold = (rtlcolor >> 1) & 31
+            if(abs(r_rtl - r_gold) > 3 or abs(g_rtl - g_gold) > 3 or abs(b_rtl - b_gold) > 3 ):
+                different = True
+                print("FAIL")
+
     else:
+        different = True
+    if different:
         print("FAIL")
-        # for key in screen.keys():
-        #     print(f"Gold Key: {key}")
-        
+    else:
+        print("SUCCESS!")
         # print("GOLD")
-        diff = screen.keys() - rtlScreen.keys()
-        print(f"In gold but not rtl: {diff}")
-        diff = rtlScreen.keys() - screen.keys()
-        print(f"In rtl but not gold: {diff}")
+        # diff = screen.keys() - rtlScreen.keys()
+        # print(f"In gold but not rtl: {diff}")
+        # diff = rtlScreen.keys() - screen.keys()
+        # print(f"In rtl but not gold: {diff}")
 
     for key, val in screen.items():
         # print(f"Y: {key[0]}, X: {key[1]}")
         gold_screen[key[0]][key[1]] = val
     with open("gold_plot.txt", "w") as goldplt:
-        for i in range (0,10):
-            for j in range (0,10):
+        for i in range (0,15):
+            for j in range (0,15):
                 goldplt.write(f"{gold_screen[i][j]},")
+                # print(f"{gold_screen[i][j]},",end="")
+            # print(" ")
             goldplt.write("\n")
         
     # check if it matches out.txt

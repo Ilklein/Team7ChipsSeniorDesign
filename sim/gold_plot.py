@@ -28,7 +28,7 @@ with open("./gold_plot.txt", newline='') as csvfile:
                 continue
             decimal = int(num)
             r = ((decimal >> 11) & 0x1F) / 31.0
-            g = ((decimal >> 5) & 0x1F) / 31.0
+            g = ((decimal >> 6) & 0x1F) / 31.0
             b = ((decimal >> 1) & 0x1F) / 31.0
             a = decimal & 1
             c = color(r,g,b,a)

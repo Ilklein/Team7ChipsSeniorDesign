@@ -2,63 +2,149 @@ module area(
     input wire clk,
     input wire rst,
     input wire valid_data,
-    input signed [15:0] v0x,
-    input signed [15:0] v0y,
-    input signed [15:0] v1x,
-    input signed [15:0] v1y,
-    input signed [15:0] v2x,
-    input signed [15:0] v2y,
-    output reg signed [15:0] area_012,
-    output reg area_done
+    input [15:0] xspan_pix,
+    input [15:0] yspan_pix,
+    output reg [15:0] area_012,
+    output wire area_done
  );
 
-reg [1:0] count;
-reg busy;
-reg signed [15:0] A, B;
-wire signed [31:0] mult_result;
+    wire [3:0] msbx, msby;
+    wire [15:0] area_012_temp;
+    //reg area_done_temp;
 
-reg signed [31:0] m1, m2;
+    wire x_done;
+    wire y_done;
+    
 
-fixed_point_mult mult (
-    .a(A),
-    .b(B),
-    .result(mult_result)
+findMSB x(.valid_data(valid_data), .rst(rst), .span(xspan_pix[8:0]), .msb(msbx), .done(x_done));
+findMSB y(.valid_data(valid_data), .rst(rst), .span(yspan_pix[8:0]), .msb(msby), .done(y_done));
+findArea a(.rst(rst), .x_done(x_done), .y_done(y_done), .msbx(msbx), .msby(msby), .area_012(area_012_temp), .area_done(area_done));
+always @(posedge clk) begin 
+
+    if(area_done) begin
+        area_012 <= area_012_temp;
+    end
+
+end
+
+endmodule
+
+
+module findArea(
+input reg rst,
+input reg x_done,
+input reg y_done,
+input [3:0] msbx,
+input [3:0] msby,
+output reg area_done,
+output reg [15:0] area_012
 );
 
 
-always @(posedge clk) begin
-    area_done <= 0;
-    if (rst) begin
-        area_012 <= 16'sd0;
-        m1 <= 32'sd0;
-        m2 <= 32'sd0;
-        A <= 16'sd0;
-        B <= 16'sd0;
-        count <= 2'd0;
-        busy <= 0;
-    end else begin
-        if (valid_data && !busy) begin
-            count <= 2'd0;
-            busy <= 1;
-            A <= v1x - v0x;
-            B <= v2y - v0y;
-        end
-        else if (busy) begin
-            if (count == 0) begin
-                m1 <= mult_result;
-                A <= v0y - v1y;
-                B <= v2x - v0x;
-            end else if (count == 1) begin
-                m2 <= mult_result;
-            end else if (count == 2) begin    
-                area_012 <= (m1 + m2) >>> 6;
-                count <= 2'd0;
-                area_done <= 1;
-                busy <= 0;
-            end 
-            count <= count + 1;
-        end  
+always @(*) begin
+    area_012 = msbx + msby;
+    area_done = 0;
+    if(rst) begin 
+        area_012 = 1;
+        area_done = 0;
+    end else 
+    if(x_done && y_done) begin 
+        area_012 = msbx + msby;
+        area_done = 1;
+    end else begin 
+        ///area_012 = area_012;
+        area_done = 0;
     end
+end
+
+endmodule
+
+module findMSB(
+    input reg valid_data,
+    input reg rst,
+    input reg [8:0] span,
+    output reg [3:0] msb,
+    output reg done
+);
+
+reg [8:0] temp;
+
+always @(*) begin
+
+    temp = span;
+
+    done = 0;
+    msb = 0;
+    if(rst) begin 
+        done = 0;
+        msb = 0;
+    end else if(valid_data) begin 
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+            temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end else begin
+                done = 1;
+            end
+
+           temp = temp >> 1; //1
+            if(temp != 0) begin 
+                msb = msb + 1;
+            end
+                done = 1;
+            
+
+    end 
+
 end
 
 endmodule
