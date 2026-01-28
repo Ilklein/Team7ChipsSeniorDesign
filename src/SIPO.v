@@ -1,13 +1,80 @@
-
 module SIPO (
-    input in, //format x1,x2,x3, y1,y2,y3, c1,c2,c3
-    input clk,
-    input en,
+    input wire clk,
+    input wire rst,
+    input wire in,
+    input reg [7:0] count,
+    input wire valid_data,
+    output reg sipo_done,
     output reg [143:0] out
 );
-    always @ (posedge clk) begin
-        if(en) begin //EN must be pulled high one clock cycle before we want to start sending data
+    
+//reg [7:0] count = 0;
+reg busy = 0;
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        out <= 144'b0;
+        //count <= 0;
+        sipo_done <= 0;
+        busy <= 0;
+    end
+    else begin
+        if (!busy) begin
             out <= {in, out[143:1]};
+            if(count == 143) begin
+                sipo_done <= 1;
+                busy <= 1;         // prevent counting again
+            end 
+            // else begin
+            //     count <= count + 1;
+            // end
+        end
+        else begin
+            sipo_done <= 0;
+            if(valid_data) begin // wait to start new triangle
+                //count <= 0;
+                busy <= 0;
+            end
         end
     end
+end
 endmodule
+
+// module SIPO9 (
+//     input wire clk,
+//     input wire rst,
+//     input wire in,
+//     input wire valid_data,
+//     output reg sipo_done,
+//     output reg [15:0] out
+// );
+    
+// reg [3:0] count;
+// reg busy;
+
+// always @(posedge clk) begin
+//     if (rst) begin
+//         out <= 16'b0;
+//         count <= 0;
+//         sipo_done <= 0;
+//         busy <= 0;
+//     end
+//     else begin
+//         if (!busy) begin
+//             out <= {in, out[15:1]};
+//             count <= count + 1;
+//             if(count == 4'd15) begin
+//                 sipo_done <= 1;
+//                 busy <= 1;         // prevent counting again
+//             end
+//         end
+//         else begin
+//             sipo_done <= 0;
+//             if(valid_data) begin // once start is triggered, start new triangle
+//                 count <= 0;
+//                 busy <= 0;
+//             end
+//         end
+//     end
+// end
+// endmodule
