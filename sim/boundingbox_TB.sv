@@ -16,7 +16,7 @@ module boundingbox_tb();
         .clk(clk),
         .en(en),
         .out(out)
-    )
+    );
 
     boundingbox boundingbox_test (
         .v0x(out[15:0]),
@@ -30,7 +30,7 @@ module boundingbox_tb();
         .xmax(xmax),
         .ymin(ymin),
         .ymax(ymax)
-    )
+    );
  
 
 
